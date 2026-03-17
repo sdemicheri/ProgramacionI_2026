@@ -451,6 +451,7 @@ async function enviar() {
 
   // Armar payload JSON para Apps Script
   const payload = {
+    tipo:        'diagnostico',
     nombre,
     comision:    document.getElementById('comision').value.trim() || '—',
     viaje,
