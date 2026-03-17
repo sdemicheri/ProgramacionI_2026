@@ -473,19 +473,16 @@ async function enviar() {
   document.getElementById('overlay').classList.add('show');
   document.getElementById('btn-enviar').disabled = true;
 
-  // Enviar al Apps Script (acepta CORS, devuelve JSON)
+  // Enviar via imagen (GET no-cors, bypasea CORS completamente)
   try {
-    const res = await fetch(FORM_ACTION, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const params = new URLSearchParams(payload).toString();
+    const url = FORM_ACTION + '?' + params;
+    await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = img.onerror = resolve;
+      img.src = url;
     });
-    const json = await res.json();
-    if (json.status === 'ok') {
-      document.getElementById('banner-ok').classList.add('show');
-    } else {
-      document.getElementById('banner-err').classList.add('show');
-    }
+    document.getElementById('banner-ok').classList.add('show');
   } catch(e) {
     document.getElementById('banner-err').classList.add('show');
   } finally {
