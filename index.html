@@ -356,7 +356,7 @@
 
 <script>
 // ─── Google Form IDs ───────────────────────────────────────
-const FORM_ACTION = "https://script.google.com/macros/s/AKfycbxWR3YfdKTLD_n-qfNTpdgOLmxen8YbWBIQtHsWZ3_jmC6BuukW_K4Z8e42lWmdRn2H3g/exec";
+const FORM_ACTION = "https://script.google.com/macros/s/AKfycbwjj9Wo8OGGHSf9j2UH55eXoSiT79vivFnAviBD46b1U3N5c-rImYrqIX-63EhWRqjEiQ/exec";
 const F = {
   nombre:      "entry.335997755",
   comision:    "entry.1377838841",
@@ -473,15 +473,11 @@ async function enviar() {
   document.getElementById('overlay').classList.add('show');
   document.getElementById('btn-enviar').disabled = true;
 
-  // Enviar via imagen (GET no-cors, bypasea CORS completamente)
+  // Enviar via fetch GET con parámetros en la URL
   try {
     const params = new URLSearchParams(payload).toString();
     const url = FORM_ACTION + '?' + params;
-    await new Promise((resolve) => {
-      const img = new Image();
-      img.onload = img.onerror = resolve;
-      img.src = url;
-    });
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
     document.getElementById('banner-ok').classList.add('show');
   } catch(e) {
     document.getElementById('banner-err').classList.add('show');
