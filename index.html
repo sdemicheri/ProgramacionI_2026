@@ -356,7 +356,7 @@
 
 <script>
 // ─── Google Form IDs ───────────────────────────────────────
-const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSeFkZf-kZDCQiZgMiNbCHhQ6Ou3JOjLpyqyO3bf5_QjUzoDnQ/formResponse";
+const FORM_ACTION = "https://script.google.com/macros/s/AKfycbxWR3YfdKTLD_n-qfNTpdgOLmxen8YbWBIQtHsWZ3_jmC6BuukW_K4Z8e42lWmdRn2H3g/exec";
 const F = {
   nombre:      "entry.335997755",
   comision:    "entry.1377838841",
@@ -449,33 +449,43 @@ async function enviar() {
   const temas = [...document.querySelectorAll('#gr-temas input:checked')].map(i=>i.value);
   const temasTxt = temas.filter(t=>t!=='Ninguno').join(', ') || 'Ninguno';
 
-  // Armar FormData para Google Forms
-  const fd = new FormData();
-  fd.append(F.nombre,      nombre);
-  fd.append(F.comision,    document.getElementById('comision').value.trim() || '—');
-  fd.append(F.viaje,       viaje);
-  fd.append(F.trabaja,     trabaja);
-  fd.append(F.area,        getRadio('t-area'));
-  fd.append(F.secundaria,  sec);
-  fd.append(F.estudios,    getRadio('univ'));
-  fd.append(F.experiencia, exp);
-  fd.append(F.lenguajes,   document.getElementById('lenguajes').value.trim() || '—');
-  fd.append(F.temas,       temasTxt);
-  fd.append(F.motivacion,  getRadio('motiv'));
-  fd.append(F.horas,       horas);
-  fd.append(F.inquietud,   document.getElementById('inquietud').value.trim() || '—');
-  fd.append(F.puntaje,     ok + '/8 (' + pct + '%)');
-  fd.append(F.nivel,       nivelTxt);
-  fd.append(F.alertas,     alertasTxt);  // ← solo visible en el Sheet
+  // Armar payload JSON para Apps Script
+  const payload = {
+    nombre,
+    comision:    document.getElementById('comision').value.trim() || '—',
+    viaje,
+    trabaja,
+    area:        getRadio('t-area'),
+    secundaria:  sec,
+    estudios:    getRadio('univ'),
+    experiencia: exp,
+    lenguajes:   document.getElementById('lenguajes').value.trim() || '—',
+    temas:       temasTxt,
+    motivacion:  getRadio('motiv'),
+    horas,
+    inquietud:   document.getElementById('inquietud').value.trim() || '—',
+    puntaje:     ok + '/8 (' + pct + '%)',
+    nivel:       nivelTxt,
+    alertas:     alertasTxt
+  };
 
   // Mostrar spinner
   document.getElementById('overlay').classList.add('show');
   document.getElementById('btn-enviar').disabled = true;
 
-  // Enviar a Google Forms (no-cors: no podemos leer la respuesta, pero sí envía)
+  // Enviar al Apps Script (acepta CORS, devuelve JSON)
   try {
-    await fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: fd });
-    document.getElementById('banner-ok').classList.add('show');
+    const res = await fetch(FORM_ACTION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (json.status === 'ok') {
+      document.getElementById('banner-ok').classList.add('show');
+    } else {
+      document.getElementById('banner-err').classList.add('show');
+    }
   } catch(e) {
     document.getElementById('banner-err').classList.add('show');
   } finally {
