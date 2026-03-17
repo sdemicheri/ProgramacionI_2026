@@ -3,549 +3,306 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnóstico Inicial — Programación I 2026</title>
+<title>Programación I — UTN 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
-    --utn-naranja: #E0884A; --utn-naranja-dark: #A0601E; --utn-naranja-light: #FDF0E6; --utn-naranja-mid: #EDB896;
-    --bg: #F5F5F5; --surface: #FFFFFF; --surface2: #F0F0F0;
-    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
-    --text: #1a1a18; --text2: #5f5e5a;
-    --ok-bg: #FDF0E6; --ok-text: #7A4010; --ok-border: #E0884A;
-    --err-bg: #FCEBEB; --err-text: #791F1F; --err-border: #E24B4A;
-    --radius: 10px; --radius-sm: 6px;
+    --naranja: #E0884A;
+    --naranja-dark: #A0601E;
+    --naranja-light: #FDF0E6;
+    --naranja-mid: #EDB896;
+    --negro: #1A1A18;
+    --gris: #5A5A57;
+    --gris-claro: #F5F5F3;
+    --blanco: #FFFFFF;
+    --borde: rgba(0,0,0,0.10);
   }
-  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; min-height: 100vh; padding: 2rem 1rem 4rem; }
-  .page { max-width: 720px; margin: 0 auto; }
 
-  .header { background: var(--utn-naranja); color: white; border-radius: var(--radius); padding: 2rem 2rem 1.5rem; margin-bottom: 2rem; }
-  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; line-height: 1.2; }
-  .header .sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-  .badge-carrera { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); border-radius: 99px; padding: 4px 12px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
-  .header-note { margin-top: 1.25rem; padding: 0.75rem 1rem; background: rgba(0,0,0,0.15); border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris-claro);
+    color: var(--negro);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-  .section-header { display: flex; align-items: center; gap: 10px; margin: 2rem 0 0.75rem; }
-  .num { width: 30px; height: 30px; border-radius: 50%; background: var(--utn-naranja); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .section-header h2 { font-size: 16px; font-weight: 600; }
+  /* ── HEADER ── */
+  header {
+    background: var(--blanco);
+    border-bottom: 1px solid var(--borde);
+    padding: 1.1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--naranja);
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--negro);
+    letter-spacing: -0.2px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--gris);
+    margin-top: 1px;
+  }
+  .header-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: var(--naranja-light);
+    color: var(--naranja-dark);
+    border: 1px solid var(--naranja-mid);
+    white-space: nowrap;
+  }
 
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 0.75rem; }
-  .field { margin-bottom: 1.25rem; }
-  .field:last-child { margin-bottom: 0; }
-  .field label.lbl { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
-  .field label.lbl .req { color: var(--utn-naranja); }
-  input[type=text], textarea { width: 100%; padding: 9px 12px; font-family: inherit; font-size: 14px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); outline: none; transition: border-color 0.15s; }
-  input[type=text]:focus, textarea:focus { border-color: var(--utn-naranja); background: white; }
-  textarea { resize: vertical; min-height: 80px; }
+  /* ── HERO ── */
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem 3rem;
+    text-align: center;
+  }
 
-  .choices { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
-  .choice { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: background 0.12s, border-color 0.12s; user-select: none; }
-  .choice:hover { background: var(--utn-naranja-light); border-color: var(--utn-naranja-mid); }
-  .choice.sel { background: var(--utn-naranja-light); border-color: var(--utn-naranja); }
-  .choice input { margin-top: 2px; accent-color: var(--utn-naranja); flex-shrink: 0; }
-  .choice span { font-size: 14px; color: var(--text); line-height: 1.45; }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--naranja);
+    margin-bottom: 1.25rem;
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards;
+  }
 
-  .logic-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 0.75rem; }
-  .q-meta { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
-  .q-stem { font-size: 14px; color: var(--text); margin-bottom: 14px; line-height: 1.65; }
-  .q-stem code { background: var(--surface2); padding: 2px 7px; border-radius: 4px; font-family: 'Consolas','Courier New',monospace; font-size: 13px; color: var(--utn-naranja-dark); border: 1px solid var(--border); }
-  .block-code { display: block; background: var(--surface2); padding: 8px 14px; border-radius: var(--radius-sm); margin: 8px 0; font-family: 'Consolas','Courier New',monospace; font-size: 13px; color: var(--utn-naranja-dark); border: 1px solid var(--border); line-height: 1.8; }
-  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-  @media (max-width: 500px) { .opts { grid-template-columns: 1fr; } .row2 { grid-template-columns: 1fr; } }
-  .opt { padding: 9px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); font-size: 13px; color: var(--text); cursor: pointer; text-align: left; transition: background 0.12s, border-color 0.12s; line-height: 1.4; font-family: inherit; }
-  .opt:hover:not(:disabled) { background: var(--utn-naranja-light); border-color: var(--utn-naranja-mid); }
-  .opt.sel { background: var(--utn-naranja-light); border-color: var(--utn-naranja); color: var(--utn-naranja-dark); font-weight: 500; }
-  .opt.correct { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok-text); font-weight: 500; }
-  .opt.wrong { background: var(--err-bg); border-color: var(--err-border); color: var(--err-text); }
-  .opt:disabled { cursor: default; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hero-title {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 600;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    color: var(--negro);
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.1s ease forwards;
+  }
+  .hero-title span {
+    color: var(--naranja);
+  }
 
-  .btn-submit { width: 100%; padding: 14px; margin-top: 1.5rem; background: var(--utn-naranja); color: white; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.15s; letter-spacing: 0.2px; }
-  .btn-submit:hover { background: var(--utn-naranja-dark); }
-  .btn-submit:disabled { opacity: 0.45; cursor: default; }
+  .hero-desc {
+    margin-top: 1.25rem;
+    font-size: 16px;
+    color: var(--gris);
+    max-width: 420px;
+    line-height: 1.65;
+    font-weight: 400;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.2s ease forwards;
+  }
 
-  .sending-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.88); z-index: 99; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
-  .sending-overlay.show { display: flex; }
-  .spinner { width: 38px; height: 38px; border: 3px solid var(--utn-naranja-light); border-top-color: var(--utn-naranja); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .sending-txt { font-size: 15px; color: var(--text2); }
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 720px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.3s ease forwards;
+  }
 
-  .banner { display: none; margin-top: 1rem; padding: 11px 15px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; }
-  .banner.show { display: block; }
-  .banner-ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
-  .banner-err { background: var(--err-bg); border: 1px solid var(--err-border); color: var(--err-text); }
+  .card {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    display: block;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--naranja-light);
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--naranja-mid); box-shadow: 0 8px 24px rgba(224,136,74,0.12); }
+  .card:hover::before { opacity: 1; }
+  .card:active { transform: translateY(0); }
 
-  #resultado { display: none; margin-top: 2rem; }
-  .res-header { background: var(--utn-naranja); color: white; border-radius: var(--radius) var(--radius) 0 0; padding: 1.5rem 2rem; }
-  .score-num { font-size: 42px; font-weight: 700; line-height: 1; }
-  .score-sub { font-size: 13px; opacity: 0.85; margin-top: 3px; }
-  .nivel-pill { display: inline-block; margin-top: 10px; padding: 4px 16px; border-radius: 99px; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.25); color: white; }
-  .bar-wrap { height: 8px; background: rgba(255,255,255,0.3); border-radius: 99px; margin-top: 14px; }
-  .bar { height: 8px; background: white; border-radius: 99px; transition: width 0.7s ease; width: 0%; }
-  .res-body { background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 1.5rem 2rem; }
-  .res-section { margin-bottom: 1.5rem; }
-  .res-section h3 { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
-  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
-  .profile-grid { display: flex; flex-direction: column; gap: 6px; }
-  .profile-row { display: flex; gap: 10px; font-size: 13px; flex-wrap: wrap; }
-  .pkey { color: var(--text2); min-width: 160px; flex-shrink: 0; }
-  .pval { color: var(--text); font-weight: 500; }
-  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-  .chip { padding: 3px 10px; border-radius: 99px; font-size: 12px; background: var(--utn-naranja-light); color: var(--utn-naranja-dark); border: 1px solid var(--utn-naranja-mid); font-weight: 500; }
-  .fb-item { padding: 9px 13px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
-  .fb-ok { background: var(--ok-bg); color: var(--ok-text); border-left: 3px solid var(--ok-border); }
-  .fb-err { background: var(--err-bg); color: var(--err-text); border-left: 3px solid var(--err-border); }
-  .interp-box { background: var(--surface2); border-radius: var(--radius-sm); padding: 1rem 1.1rem; font-size: 14px; line-height: 1.75; color: var(--text); }
+  .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--naranja-light);
+    border: 1px solid var(--naranja-mid);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1rem;
+    position: relative;
+    font-size: 18px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--naranja);
+    margin-bottom: 5px;
+    position: relative;
+  }
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--negro);
+    letter-spacing: -0.3px;
+    position: relative;
+  }
+  .card-desc {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--gris);
+    line-height: 1.5;
+    position: relative;
+  }
+  .card-arrow {
+    position: absolute;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--naranja);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.18s, transform 0.18s;
+    transform: translateX(-4px);
+  }
+  .card:hover .card-arrow { opacity: 1; transform: translateX(0); }
+  .card-arrow svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* próximamente */
+  .card.soon {
+    opacity: 0.55;
+    cursor: default;
+  }
+  .card.soon:hover { transform: none; box-shadow: none; border-color: var(--borde); }
+  .card.soon:hover::before { opacity: 0; }
+  .card.soon .card-arrow { display: none; }
+  .soon-badge {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--gris-claro);
+    color: var(--gris);
+    border: 1px solid var(--borde);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 12px;
+    color: var(--gris);
+    border-top: 1px solid var(--borde);
+    background: var(--blanco);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 500px) {
+    .hero-title { letter-spacing: -0.8px; }
+    header { padding: 1rem; }
+    .header-badge { display: none; }
+  }
 </style>
 </head>
 <body>
 
-<div class="sending-overlay" id="overlay">
-  <div class="spinner"></div>
-  <div class="sending-txt">Guardando tu diagnóstico...</div>
-</div>
-
-<div class="page">
-
-  <div class="header">
-    <div class="header-top">
-      <div>
-        <h1>Diagnóstico inicial</h1>
-        <div class="sub">Programación I — Ciclo lectivo 2026</div>
-      </div>
-      <span class="badge-carrera">Tec. Universitaria en Programación</span>
-    </div>
-    <div class="header-note">
-      Respondé con sinceridad. No hay respuestas correctas o incorrectas en la parte de perfil. En los ejercicios de lógica podés intentarlos aunque no tengas experiencia previa en programación.
+<header>
+  <div class="header-left">
+    <div class="header-dot"></div>
+    <div>
+      <div class="header-title">Programación I</div>
+      <div class="header-sub">UTN — Ciclo lectivo 2026</div>
     </div>
   </div>
+  <span class="header-badge">Tec. Universitaria en Programación</span>
+</header>
 
-  <!-- S1 -->
-  <div class="section-header"><div class="num">1</div><h2>Datos personales y logísticos</h2></div>
-  <div class="card">
-    <div class="row2" style="margin-bottom:1.25rem">
-      <div class="field">
-        <label class="lbl" for="nombre">Nombre y apellido <span class="req">*</span></label>
-        <input type="text" id="nombre" placeholder="Tu nombre completo">
+<main class="hero">
+  <div class="hero-eyebrow">Bienvenido/a</div>
+  <h1 class="hero-title">Tu espacio de<br><span>Programación I</span></h1>
+  <p class="hero-desc">Accedé a las herramientas y actividades de la materia desde acá. Más recursos se irán sumando durante el cuatrimestre.</p>
+
+  <div class="cards-grid">
+
+    <!-- DIAGNÓSTICO -->
+    <a class="card" href="diagnostico.html">
+      <div class="card-icon">📋</div>
+      <div class="card-label">Semana 1</div>
+      <div class="card-title">Diagnóstico inicial</div>
+      <div class="card-desc">Contanos tu perfil y resolvé ejercicios de lógica para que podamos acompañarte mejor.</div>
+      <div class="card-arrow">
+        <svg viewBox="0 0 16 16"><polyline points="3,8 13,8"/><polyline points="9,4 13,8 9,12"/></svg>
       </div>
-      <div class="field">
-        <label class="lbl" for="comision">Comisión</label>
-        <input type="text" id="comision" placeholder="Ej: Comisión A">
-      </div>
+    </a>
+
+    <!-- PRÓXIMAMENTE 1 -->
+    <div class="card soon">
+      <span class="soon-badge">Próximamente</span>
+      <div class="card-icon">📝</div>
+      <div class="card-label">Actividad</div>
+      <div class="card-title">Práctica 1</div>
+      <div class="card-desc">Ejercicios de pseudocódigo y diagramas de flujo.</div>
     </div>
-    <div class="field">
-      <label class="lbl">¿Viajás para venir a cursar?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="viaje" value="No, vivo en la ciudad de la sede"><span>No, vivo en la ciudad donde está la sede</span></label>
-        <label class="choice"><input type="radio" name="viaje" value="Sí, menos de 1 hora"><span>Sí, vengo de una localidad cercana (menos de 1 hora)</span></label>
-        <label class="choice"><input type="radio" name="viaje" value="Sí, más de 1 hora"><span>Sí, viajo más de 1 hora por clase</span></label>
-      </div>
+
+    <!-- PRÓXIMAMENTE 2 -->
+    <div class="card soon">
+      <span class="soon-badge">Próximamente</span>
+      <div class="card-icon">🧩</div>
+      <div class="card-label">Actividad</div>
+      <div class="card-title">Práctica 2</div>
+      <div class="card-desc">Estructuras de control y resolución de problemas.</div>
     </div>
+
   </div>
+</main>
 
-  <!-- S2 -->
-  <div class="section-header"><div class="num">2</div><h2>Situación laboral</h2></div>
-  <div class="card">
-    <div class="field">
-      <label class="lbl">¿Trabajás actualmente?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="trabaja" value="No trabajo"><span>No trabajo</span></label>
-        <label class="choice"><input type="radio" name="trabaja" value="Part-time"><span>Sí, trabajo pocas horas (part-time, changas)</span></label>
-        <label class="choice"><input type="radio" name="trabaja" value="Jornada completa"><span>Sí, trabajo jornada completa</span></label>
-      </div>
-    </div>
-    <div id="area-detalle" style="display:none">
-      <div class="field" style="margin-top:1rem">
-        <label class="lbl">¿En qué área trabajás?</label>
-        <div class="choices">
-          <label class="choice"><input type="radio" name="t-area" value="Tecnología / informática"><span>Tecnología / informática / desarrollo de software</span></label>
-          <label class="choice"><input type="radio" name="t-area" value="Relacionado con tech"><span>Relacionado (administración, soporte, atención al cliente en empresas tech)</span></label>
-          <label class="choice"><input type="radio" name="t-area" value="No relacionado con tecnología"><span>No relacionado con tecnología</span></label>
-        </div>
-      </div>
-    </div>
-  </div>
+<footer>
+  Programación I · UTN 2026 — Ing. Achetta · Ing. Demicheri · Tec. Becerro · Tec. Molina
+</footer>
 
-  <!-- S3 -->
-  <div class="section-header"><div class="num">3</div><h2>Formación previa</h2></div>
-  <div class="card">
-    <div class="field">
-      <label class="lbl">¿De qué tipo de secundaria venís?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="sec" value="Técnica - prog/informática"><span>Escuela técnica con orientación en programación / informática / sistemas</span></label>
-        <label class="choice"><input type="radio" name="sec" value="Técnica - otra orientación"><span>Escuela técnica con otra orientación</span></label>
-        <label class="choice"><input type="radio" name="sec" value="Bachillerato común"><span>Bachillerato común / humanidades, ciencias sociales, economía, etc.</span></label>
-        <label class="choice"><input type="radio" name="sec" value="Otro tipo"><span>Otro tipo de secundaria</span></label>
-      </div>
-    </div>
-    <div class="field">
-      <label class="lbl">¿Tenés estudios universitarios o terciarios previos?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="univ" value="Primera carrera"><span>No, esta es mi primera carrera</span></label>
-        <label class="choice"><input type="radio" name="univ" value="Ingeniería en Sistemas u otra informática"><span>Sí, empecé / cursé Ingeniería en Sistemas u otra carrera de informática</span></label>
-        <label class="choice"><input type="radio" name="univ" value="Otra carrera universitaria/terciaria"><span>Sí, estudié o estudio otra carrera universitaria / terciaria</span></label>
-      </div>
-    </div>
-  </div>
-
-  <!-- S4 -->
-  <div class="section-header"><div class="num">4</div><h2>Experiencia en programación</h2></div>
-  <div class="card">
-    <div class="field">
-      <label class="lbl">¿Alguna vez programaste o usaste un lenguaje de programación?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="exp" value="Nunca programé"><span>Nunca. Es la primera vez que me acerco a la programación</span></label>
-        <label class="choice"><input type="radio" name="exp" value="Algo (secundaria o curso corto)"><span>Algo. Vi algo en la secundaria o hice algún curso corto</span></label>
-        <label class="choice"><input type="radio" name="exp" value="Experiencia razonable"><span>Tengo experiencia razonable (varios meses de práctica continua)</span></label>
-        <label class="choice"><input type="radio" name="exp" value="Programo hace tiempo"><span>Programo hace tiempo y me manejo bien</span></label>
-      </div>
-    </div>
-    <div class="field">
-      <label class="lbl" for="lenguajes">Si usaste algún lenguaje, ¿cuál/cuáles? (dejá en blanco si no aplica)</label>
-      <input type="text" id="lenguajes" placeholder="Ej: Python, Scratch, JavaScript, C++...">
-    </div>
-    <div class="field">
-      <label class="lbl">¿Qué temas conocés o trabajaste? (marcá todos los que apliquen)</label>
-      <div class="choices" id="gr-temas">
-        <label class="choice"><input type="checkbox" value="Variables y tipos de datos"><span>Variables y tipos de datos</span></label>
-        <label class="choice"><input type="checkbox" value="Condicionales (if/else)"><span>Estructuras condicionales (if / else)</span></label>
-        <label class="choice"><input type="checkbox" value="Bucles (while/for)"><span>Bucles / estructuras repetitivas (while, for)</span></label>
-        <label class="choice"><input type="checkbox" value="Funciones/procedimientos"><span>Funciones o procedimientos</span></label>
-        <label class="choice"><input type="checkbox" value="Vectores/arrays/listas"><span>Vectores, arrays o listas</span></label>
-        <label class="choice"><input type="checkbox" value="Archivos"><span>Lectura / escritura de archivos</span></label>
-        <label class="choice"><input type="checkbox" value="Ninguno"><span>Ninguno de los anteriores</span></label>
-      </div>
-    </div>
-  </div>
-
-  <!-- S5 -->
-  <div class="section-header"><div class="num">5</div><h2>Ejercicios de lógica</h2></div>
-  <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;">Estos ejercicios <strong>no requieren conocer ningún lenguaje de programación</strong>. Evaluamos tu razonamiento lógico. Intentalos aunque no estés seguro/a.</p>
-
-  <div class="logic-card" data-id="l1" data-correct="b">
-    <div class="q-meta">Pregunta 1 — Secuencias lógicas</div>
-    <div class="q-stem">¿Cuál es el siguiente número en la serie? <code>2 → 4 → 8 → 16 → ?</code></div>
-    <div class="opts">
-      <button class="opt" data-v="a">18</button><button class="opt" data-v="b">32</button>
-      <button class="opt" data-v="c">24</button><button class="opt" data-v="d">20</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l2" data-correct="c">
-    <div class="q-meta">Pregunta 2 — Condiciones</div>
-    <div class="q-stem">Un programa dice:<span class="block-code">Si edad ≥ 18 → mostrar "Mayor de edad"<br>Si no → mostrar "Menor de edad"</span>¿Qué muestra si <code>edad = 18</code>?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">Menor de edad</button><button class="opt" data-v="b">No muestra nada</button>
-      <button class="opt" data-v="c">Mayor de edad</button><button class="opt" data-v="d">Error</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l3" data-correct="b">
-    <div class="q-meta">Pregunta 3 — Traza de algoritmo</div>
-    <div class="q-stem">Seguí este algoritmo paso a paso:<span class="block-code">x = 0<br>Repetir 4 veces: x = x + 3</span>¿Cuánto vale <code>x</code> al terminar?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">3</button><button class="opt" data-v="b">12</button>
-      <button class="opt" data-v="c">7</button><button class="opt" data-v="d">4</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l4" data-correct="a">
-    <div class="q-meta">Pregunta 4 — Condiciones compuestas</div>
-    <div class="q-stem">¿Cuándo es verdadera la condición <code>(A &gt; 5) Y (A &lt; 10)</code>?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">Cuando A vale 7</button><button class="opt" data-v="b">Cuando A vale 10</button>
-      <button class="opt" data-v="c">Cuando A vale 5</button><button class="opt" data-v="d">Cuando A vale 11</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l5" data-correct="c">
-    <div class="q-meta">Pregunta 5 — Razonamiento con bucles</div>
-    <div class="q-stem">Un cajero da vuelto usando monedas de $10. Si el vuelto es $37, ¿cuántas monedas de $10 puede dar como máximo sin pasarse?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">4</button><button class="opt" data-v="b">2</button>
-      <button class="opt" data-v="c">3</button><button class="opt" data-v="d">37</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l6" data-correct="d">
-    <div class="q-meta">Pregunta 6 — Descomposición de problemas</div>
-    <div class="q-stem">Querés calcular si un número es par. ¿Qué operación matemática usarías para determinarlo?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">Suma</button><button class="opt" data-v="b">Raíz cuadrada</button>
-      <button class="opt" data-v="c">División entera</button><button class="opt" data-v="d">Resto de la división (módulo)</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l7" data-correct="b">
-    <div class="q-meta">Pregunta 7 — Abstracción</div>
-    <div class="q-stem">Tenés una lista de 10 nombres. Querés quedarte solo con los que empiezan con "A". ¿Cuál es la idea central del algoritmo?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">Borrar toda la lista y empezar de nuevo</button>
-      <button class="opt" data-v="b">Recorrer cada nombre y verificar su primera letra</button>
-      <button class="opt" data-v="c">Ordenar los nombres alfabéticamente primero</button>
-      <button class="opt" data-v="d">Contar cuántas letras tiene cada nombre</button>
-    </div>
-  </div>
-
-  <div class="logic-card" data-id="l8" data-correct="a">
-    <div class="q-meta">Pregunta 8 — Seguimiento de variables</div>
-    <div class="q-stem"><span class="block-code">a = 5<br>b = a + 2<br>a = b * 2</span>¿Cuánto vale <code>a</code> al final?</div>
-    <div class="opts">
-      <button class="opt" data-v="a">14</button><button class="opt" data-v="b">5</button>
-      <button class="opt" data-v="c">7</button><button class="opt" data-v="d">10</button>
-    </div>
-  </div>
-
-  <!-- S6 -->
-  <div class="section-header"><div class="num">6</div><h2>Expectativas y motivación</h2></div>
-  <div class="card">
-    <div class="field">
-      <label class="lbl">¿Por qué elegiste esta carrera?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="motiv" value="Vocación / interés genuino"><span>Me interesa genuinamente la programación y el desarrollo de software</span></label>
-        <label class="choice"><input type="radio" name="motiv" value="Salida laboral / mejorar ingresos"><span>Por salida laboral / quiero mejorar mis ingresos</span></label>
-        <label class="choice"><input type="radio" name="motiv" value="Complementar trabajo o carrera actual"><span>Para complementar otro trabajo o carrera que ya tengo</span></label>
-        <label class="choice"><input type="radio" name="motiv" value="No estoy seguro/a todavía"><span>Todavía no estoy seguro/a de por qué la elegí</span></label>
-      </div>
-    </div>
-    <div class="field">
-      <label class="lbl">¿Cuántas horas por semana podrías dedicarle al estudio fuera de clases?</label>
-      <div class="choices">
-        <label class="choice"><input type="radio" name="horas" value="Menos de 2 horas"><span>Menos de 2 horas</span></label>
-        <label class="choice"><input type="radio" name="horas" value="Entre 2 y 5 horas"><span>Entre 2 y 5 horas</span></label>
-        <label class="choice"><input type="radio" name="horas" value="Más de 5 horas"><span>Más de 5 horas</span></label>
-      </div>
-    </div>
-    <div class="field">
-      <label class="lbl" for="inquietud">¿Qué te genera más inquietud de esta materia? (opcional)</label>
-      <textarea id="inquietud" placeholder="Escribí libremente..."></textarea>
-    </div>
-  </div>
-
-  <button class="btn-submit" id="btn-enviar" onclick="enviar()">Enviar diagnóstico</button>
-  <div class="banner banner-ok" id="banner-ok">✓ Diagnóstico enviado correctamente. ¡Gracias!</div>
-  <div class="banner banner-err" id="banner-err">No se pudo conectar con el servidor. Tu resultado se muestra igual abajo.</div>
-
-  <!-- RESULTADO (sin nota docente) -->
-  <div id="resultado">
-    <div class="res-header">
-      <div class="score-num" id="r-score">—</div>
-      <div class="score-sub">ejercicios de lógica correctos</div>
-      <div><span class="nivel-pill" id="r-nivel"></span></div>
-      <div class="bar-wrap"><div class="bar" id="r-bar"></div></div>
-    </div>
-    <div class="res-body">
-      <div class="res-section">
-        <h3>Tu perfil</h3>
-        <div class="profile-grid" id="r-perfil"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="res-section">
-        <h3>Ejercicios — detalle</h3>
-        <div id="r-feedback"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="res-section">
-        <h3>¿Qué significa tu resultado?</h3>
-        <div class="interp-box" id="r-interp"></div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /page -->
-
-<script>
-// ─── Google Form IDs ───────────────────────────────────────
-const FORM_ACTION = "https://script.google.com/macros/s/AKfycbwjj9Wo8OGGHSf9j2UH55eXoSiT79vivFnAviBD46b1U3N5c-rImYrqIX-63EhWRqjEiQ/exec";
-const F = {
-  nombre:      "entry.335997755",
-  comision:    "entry.1377838841",
-  viaje:       "entry.1884223113",
-  trabaja:     "entry.1427897164",
-  area:        "entry.1555575375",
-  secundaria:  "entry.2141754579",
-  estudios:    "entry.1167468056",
-  experiencia: "entry.419467753",
-  lenguajes:   "entry.1525629122",
-  temas:       "entry.778870408",
-  motivacion:  "entry.718505733",
-  horas:       "entry.884622320",
-  inquietud:   "entry.870891211",
-  puntaje:     "entry.45157362",
-  nivel:       "entry.363075494",
-  alertas:     "entry.267037914"
-};
-// ──────────────────────────────────────────────────────────
-
-const answers = {};
-
-// Highlight radios/checkboxes
-document.querySelectorAll('.choices input[type=radio]').forEach(inp => {
-  inp.addEventListener('change', () => {
-    document.querySelectorAll(`input[name="${inp.name}"]`).forEach(i => i.closest('.choice').classList.remove('sel'));
-    inp.closest('.choice').classList.add('sel');
-    if (inp.name === 'trabaja') {
-      document.getElementById('area-detalle').style.display = inp.value !== 'No trabajo' ? 'block' : 'none';
-    }
-  });
-});
-document.querySelectorAll('.choices input[type=checkbox]').forEach(inp => {
-  inp.addEventListener('change', () => inp.closest('.choice').classList.toggle('sel', inp.checked));
-});
-
-// Logic options
-document.querySelectorAll('.logic-card .opt').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const card = btn.closest('.logic-card');
-    if (card.dataset.locked) return;
-    card.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-    answers[card.dataset.id] = btn.dataset.v;
-  });
-});
-
-const correct = {
-  l1:{v:'b', txt:'32 — la serie se duplica cada vez (×2)'},
-  l2:{v:'c', txt:'"Mayor de edad" — 18 ≥ 18 es verdadero'},
-  l3:{v:'b', txt:'12 — se suma 3 exactamente 4 veces: 0+3+3+3+3'},
-  l4:{v:'a', txt:'A=7 cumple ambas condiciones: 7>5 y 7<10'},
-  l5:{v:'c', txt:'3 monedas — 3×10=30 ≤ 37; 4×10=40 > 37'},
-  l6:{v:'d', txt:'El módulo (%) devuelve 0 si el número es par'},
-  l7:{v:'b', txt:'Recorrer y verificar es el núcleo del pensamiento algorítmico'},
-  l8:{v:'a', txt:'b=5+2=7; luego a=7×2=14'}
-};
-const qLabels = {l1:'Serie numérica',l2:'Condición if/else',l3:'Bucle acumulador',l4:'Operador AND',l5:'División entera',l6:'Operador módulo',l7:'Diseño de algoritmo',l8:'Seguimiento de variables'};
-
-function getRadio(name) {
-  const el = document.querySelector(`input[name="${name}"]:checked`);
-  return el ? el.value : '—';
-}
-
-async function enviar() {
-  const nombre = document.getElementById('nombre').value.trim();
-  if (!nombre) { alert('Por favor ingresá tu nombre antes de continuar.'); return; }
-
-  // Calcular puntaje
-  let ok = 0;
-  Object.keys(correct).forEach(id => { if (answers[id] === correct[id].v) ok++; });
-  const pct = Math.round(ok / 8 * 100);
-  const nivelTxt = ok <= 2 ? 'Nivel inicial' : ok <= 5 ? 'Nivel intermedio' : 'Nivel avanzado';
-
-  // Construir alertas (solo van al Sheet — el alumno NO las ve)
-  const viaje      = getRadio('viaje');
-  const trabaja    = getRadio('trabaja');
-  const horas      = getRadio('horas');
-  const exp        = getRadio('exp');
-  const sec        = getRadio('sec');
-  const alertas = [];
-  if (viaje === 'Sí, más de 1 hora')       alertas.push('Viaja +1h');
-  if (trabaja === 'Jornada completa')        alertas.push('Trabaja jornada completa');
-  if (horas === 'Menos de 2 horas')         alertas.push('Estudia <2h/sem.');
-  if (ok <= 2)                               alertas.push('Lógica inicial');
-  if (exp === 'Nunca programé' && sec !== 'Técnica - prog/informática')
-                                             alertas.push('Sin exp. + sec. no técnica');
-  const alertasTxt = alertas.length ? alertas.join(' | ') : 'Sin factores de riesgo';
-
-  const temas = [...document.querySelectorAll('#gr-temas input:checked')].map(i=>i.value);
-  const temasTxt = temas.filter(t=>t!=='Ninguno').join(', ') || 'Ninguno';
-
-  // Armar payload JSON para Apps Script
-  const payload = {
-    nombre,
-    comision:    document.getElementById('comision').value.trim() || '—',
-    viaje,
-    trabaja,
-    area:        getRadio('t-area'),
-    secundaria:  sec,
-    estudios:    getRadio('univ'),
-    experiencia: exp,
-    lenguajes:   document.getElementById('lenguajes').value.trim() || '—',
-    temas:       temasTxt,
-    motivacion:  getRadio('motiv'),
-    horas,
-    inquietud:   document.getElementById('inquietud').value.trim() || '—',
-    puntaje:     ok + '/8 (' + pct + '%)',
-    nivel:       nivelTxt,
-    alertas:     alertasTxt
-  };
-
-  // Mostrar spinner
-  document.getElementById('overlay').classList.add('show');
-  document.getElementById('btn-enviar').disabled = true;
-
-  // Enviar via fetch GET con parámetros en la URL
-  try {
-    const params = new URLSearchParams(payload).toString();
-    const url = FORM_ACTION + '?' + params;
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
-    document.getElementById('banner-ok').classList.add('show');
-  } catch(e) {
-    document.getElementById('banner-err').classList.add('show');
-  } finally {
-    document.getElementById('overlay').classList.remove('show');
-  }
-
-  mostrarResultado(ok, pct, nivelTxt, temasTxt);
-}
-
-function mostrarResultado(ok, pct, nivelTxt, temasTxt) {
-  // Bloquear y mostrar respuestas correctas
-  const fbDiv = document.getElementById('r-feedback');
-  fbDiv.innerHTML = '';
-  Object.keys(correct).forEach((id, i) => {
-    const card = document.querySelector(`[data-id="${id}"]`);
-    card.dataset.locked = '1';
-    const resp = answers[id];
-    const isOk = resp === correct[id].v;
-    card.querySelectorAll('.opt').forEach(b => {
-      b.disabled = true;
-      b.classList.remove('sel');
-      if (b.dataset.v === correct[id].v)      b.classList.add('correct');
-      else if (b.dataset.v === resp && !isOk) b.classList.add('wrong');
-    });
-    const fb = document.createElement('div');
-    fb.className = 'fb-item ' + (isOk ? 'fb-ok' : 'fb-err');
-    fb.textContent = (isOk ? '✓ ' : '✗ ') + 'P'+(i+1)+' — '+qLabels[id]+': '+correct[id].txt;
-    fbDiv.appendChild(fb);
-  });
-
-  // Score y nivel
-  document.getElementById('r-score').textContent = ok + '/8';
-  document.getElementById('r-nivel').textContent = nivelTxt;
-  setTimeout(() => { document.getElementById('r-bar').style.width = pct + '%'; }, 100);
-
-  // Perfil (sin alertas)
-  const rows = [
-    ['Viaje',                getRadio('viaje')],
-    ['Situación laboral',    getRadio('trabaja')],
-    ['Secundaria',           getRadio('sec')],
-    ['Estudios previos',     getRadio('univ')],
-    ['Exp. en programación', getRadio('exp')],
-    ['Lenguajes',            document.getElementById('lenguajes').value.trim() || '—'],
-    ['Motivación',           getRadio('motiv')],
-    ['Horas estudio/sem.',   getRadio('horas')]
-  ];
-  const perfilDiv = document.getElementById('r-perfil');
-  perfilDiv.innerHTML = rows.map(([k,v]) =>
-    `<div class="profile-row"><span class="pkey">${k}</span><span class="pval">${v}</span></div>`
-  ).join('');
-  const temasArr = temasTxt !== 'Ninguno' ? temasTxt.split(', ') : [];
-  if (temasArr.length) {
-    perfilDiv.innerHTML += '<div class="profile-row" style="margin-top:6px"><span class="pkey">Temas conocidos</span>'
-      + '<div class="chip-row">'+temasArr.map(t=>`<span class="chip">${t}</span>`).join('')+'</div></div>';
-  }
-
-  // Interpretación
-  const interps = {
-    'Nivel inicial':     'Tu lógica está en una etapa inicial — es completamente normal si nunca tuviste contacto con programación. La materia está diseñada para acompañarte desde cero. Prestá especial atención a las primeras semanas (algoritmos, pseudocódigo, estructuras secuenciales) y no dejes pasar las dudas. La práctica constante hace la diferencia.',
-    'Nivel intermedio':  'Tenés una base de razonamiento lógico que te va a ayudar a arrancar bien. Puede que algunos conceptos del lenguaje sean nuevos, pero el andamiaje lógico ya está construido. Aprovechá la práctica constante para consolidarlo y avanzar con seguridad.',
-    'Nivel avanzado':    'Tu razonamiento lógico está muy bien desarrollado. Esto sugiere que ya tuviste contacto con programación o que resolvés problemas con facilidad. Podés aprovechar la materia para profundizar en buenas prácticas, modularización, estructuras de datos y documentación de código.'
-  };
-  document.getElementById('r-interp').textContent = interps[nivelTxt];
-
-  document.getElementById('resultado').style.display = 'block';
-  document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-</script>
 </body>
 </html>
