@@ -356,7 +356,7 @@
 
 <script>
 // ─── Google Form IDs ───────────────────────────────────────
-const FORM_ACTION = "https://script.google.com/macros/s/AKfycbwjj9Wo8OGGHSf9j2UH55eXoSiT79vivFnAviBD46b1U3N5c-rImYrqIX-63EhWRqjEiQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjj9Wo8OGGHSf9j2UH55eXoSiT79vivFnAviBD46b1U3N5c-rImYrqIX-63EhWRqjEiQ/exec";
 const F = {
   nombre:      "entry.335997755",
   comision:    "entry.1377838841",
@@ -471,20 +471,29 @@ async function enviar() {
   };
 
   // Mostrar spinner
-  document.getElementById('overlay').classList.add('show');
+    document.getElementById('overlay').classList.add('show');
   document.getElementById('btn-enviar').disabled = true;
 
-  // Enviar via fetch GET con parámetros en la URL
-  try {
-    const params = new URLSearchParams(payload).toString();
-    const url = FORM_ACTION + '?' + params;
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
-    document.getElementById('banner-ok').classList.add('show');
-  } catch(e) {
-    document.getElementById('banner-err').classList.add('show');
-  } finally {
+  // Envío via form POST a iframe oculto — sin límite de URL ni CORS
+  const iframe = document.getElementById('hidden-iframe');
+  const form   = document.getElementById('hidden-form');
+  form.innerHTML = '';
+  form.action = SCRIPT_URL;
+  form.method = 'POST';
+  form.target = 'hidden-iframe';
+  Object.entries(payload).forEach(([k, v]) => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = k; inp.value = v;
+    form.appendChild(inp);
+  });
+  iframe.onload = () => {
     document.getElementById('overlay').classList.remove('show');
-  }
+    document.getElementById('banner-ok').classList.add('show');
+  };
+  setTimeout(() => {
+    document.getElementById('overlay').classList.remove('show');
+  }, 4000);
+  form.submit();
 
   mostrarResultado(ok, pct, nivelTxt, temasTxt);
 }
@@ -548,5 +557,7 @@ function mostrarResultado(ok, pct, nivelTxt, temasTxt) {
   document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 </script>
+<iframe name="hidden-iframe" id="hidden-iframe" style="display:none"></iframe>
+<form id="hidden-form" style="display:none"></form>
 </body>
 </html>
