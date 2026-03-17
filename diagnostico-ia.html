@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico IA — Programación I 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --azul: #5B7FA6; --azul-dark: #3A5A80; --azul-light: #EBF1F8; --azul-mid: #9DBAD6;
+    --bg: #F4F6F9; --surface: #FFFFFF; --surface2: #F0F3F7;
+    --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.20);
+    --text: #1A1A18; --text2: #5A5A57;
+    --ok-bg: #EAF3DE; --ok-text: #27500A; --ok-border: #639922;
+    --err-bg: #FCEBEB; --err-text: #791F1F; --err-border: #E24B4A;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; min-height: 100vh; padding: 2rem 1rem 4rem; }
+  .page { max-width: 720px; margin: 0 auto; }
+
+  .header { background: var(--azul); color: white; border-radius: var(--radius); padding: 2rem 2rem 1.5rem; margin-bottom: 2rem; position: relative; overflow: hidden; }
+  .header::after { content:''; position:absolute; right:-40px; top:-40px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,0.06); pointer-events:none; }
+  .header-back { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:rgba(255,255,255,0.75); text-decoration:none; margin-bottom:1rem; transition:color 0.15s; }
+  .header-back:hover { color:white; }
+  .header-back svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .header-top { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; position:relative; }
+  .header h1 { font-size:22px; font-weight:600; letter-spacing:-0.3px; line-height:1.2; }
+  .header .sub { font-size:13px; opacity:0.8; margin-top:4px; }
+  .badge { background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); border-radius:99px; padding:4px 12px; font-size:12px; white-space:nowrap; font-family:'DM Mono',monospace; }
+  .header-note { margin-top:1.25rem; padding:0.75rem 1rem; background:rgba(0,0,0,0.15); border-radius:var(--radius-sm); font-size:13px; line-height:1.5; position:relative; }
+
+  .section-header { display:flex; align-items:center; gap:10px; margin:2rem 0 0.75rem; }
+  .num { width:30px; height:30px; border-radius:50%; background:var(--azul); color:white; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'DM Mono',monospace; }
+  .section-header h2 { font-size:16px; font-weight:600; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-bottom:0.75rem; }
+  .field { margin-bottom:1.25rem; }
+  .field:last-child { margin-bottom:0; }
+  .field label.lbl { display:block; font-size:13px; font-weight:500; color:var(--text2); margin-bottom:6px; }
+  .field label.lbl .req { color:var(--azul); }
+  .field label.lbl .hint { font-weight:400; font-style:italic; color:var(--text2); opacity:0.75; font-size:12px; }
+  input[type=text], textarea { width:100%; padding:9px 12px; font-family:inherit; font-size:14px; border:1px solid var(--border2); border-radius:var(--radius-sm); background:var(--surface2); color:var(--text); outline:none; transition:border-color 0.15s; }
+  input[type=text]:focus, textarea:focus { border-color:var(--azul); background:white; }
+  textarea { resize:vertical; min-height:80px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:520px) { .row2 { grid-template-columns:1fr; } .opts { grid-template-columns:1fr !important; } }
+
+  .choices { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+  .choice { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:background 0.12s, border-color 0.12s; user-select:none; }
+  .choice:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .choice.sel { background:var(--azul-light); border-color:var(--azul); }
+  .choice input { margin-top:2px; accent-color:var(--azul); flex-shrink:0; }
+  .choice span { font-size:14px; color:var(--text); line-height:1.45; }
+
+  /* Herramientas grid */
+  .tools-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:8px; margin-top:6px; }
+  .tool-card { padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:background 0.12s, border-color 0.12s; user-select:none; display:flex; align-items:center; gap:8px; }
+  .tool-card:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .tool-card.sel { background:var(--azul-light); border-color:var(--azul); }
+  .tool-card input { accent-color:var(--azul); flex-shrink:0; }
+  .tool-card span { font-size:13px; color:var(--text); font-weight:500; }
+  .tool-icon { font-size:16px; }
+
+  /* Scale */
+  .scale-wrap { margin-top:8px; }
+  .scale-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--text2); margin-bottom:6px; font-family:'DM Mono',monospace; }
+  .scale-opts { display:flex; gap:6px; }
+  .scale-btn { flex:1; padding:10px 4px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); font-size:12px; font-weight:500; cursor:pointer; text-align:center; transition:background 0.12s, border-color 0.12s; font-family:'DM Mono',monospace; color:var(--text); }
+  .scale-btn:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .scale-btn.sel { background:var(--azul); border-color:var(--azul-dark); color:white; }
+
+  /* Opinion cards */
+  .opinion-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .op-card { padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:background 0.12s, border-color 0.12s; user-select:none; }
+  .op-card:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .op-card.sel { background:var(--azul-light); border-color:var(--azul); }
+  .op-icon { font-size:20px; margin-bottom:4px; }
+  .op-label { font-size:13px; font-weight:500; color:var(--text); }
+  .op-desc { font-size:12px; color:var(--text2); margin-top:2px; line-height:1.4; }
+
+  /* Concepto pill quiz */
+  .concept-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .concept-item { border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
+  .concept-q { padding:8px 12px; background:var(--surface2); font-size:13px; font-weight:500; border-bottom:1px solid var(--border); color:var(--text); }
+  .concept-opts { display:flex; flex-direction:column; }
+  .concept-opt { padding:7px 12px; font-size:12px; cursor:pointer; transition:background 0.1s; border-bottom:1px solid var(--border); color:var(--text); }
+  .concept-opt:last-child { border-bottom:none; }
+  .concept-opt:hover { background:var(--azul-light); }
+  .concept-opt.sel { background:var(--azul-light); color:var(--azul-dark); font-weight:500; }
+  @media (max-width:520px) { .concept-grid { grid-template-columns:1fr; } .opinion-grid { grid-template-columns:1fr; } .tools-grid { grid-template-columns:1fr 1fr; } }
+
+  /* Dispositivos */
+  .device-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .device-btn { padding:8px 16px; border:1px solid var(--border); border-radius:99px; font-size:13px; cursor:pointer; background:var(--surface); color:var(--text); transition:background 0.12s, border-color 0.12s; font-family:inherit; display:flex; align-items:center; gap:6px; }
+  .device-btn:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .device-btn.sel { background:var(--azul-light); border-color:var(--azul); color:var(--azul-dark); font-weight:500; }
+
+  /* Usos cátedra checkboxes con descripción */
+  .uso-grid { display:flex; flex-direction:column; gap:7px; margin-top:6px; }
+  .uso-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:background 0.12s, border-color 0.12s; user-select:none; }
+  .uso-item:hover { background:var(--azul-light); border-color:var(--azul-mid); }
+  .uso-item.sel { background:var(--azul-light); border-color:var(--azul); }
+  .uso-item input { margin-top:3px; accent-color:var(--azul); flex-shrink:0; }
+  .uso-text { flex:1; }
+  .uso-title { font-size:14px; font-weight:500; color:var(--text); }
+  .uso-desc { font-size:12px; color:var(--text2); margin-top:2px; line-height:1.4; }
+
+  .btn-submit { width:100%; padding:14px; margin-top:1.5rem; background:var(--azul); color:white; border:none; border-radius:var(--radius); font-size:16px; font-weight:600; cursor:pointer; transition:background 0.15s; font-family:inherit; }
+  .btn-submit:hover { background:var(--azul-dark); }
+  .btn-submit:disabled { opacity:0.45; cursor:default; }
+
+  .sending-overlay { display:none; position:fixed; inset:0; background:rgba(255,255,255,0.88); z-index:99; align-items:center; justify-content:center; flex-direction:column; gap:14px; }
+  .sending-overlay.show { display:flex; }
+  .spinner { width:38px; height:38px; border:3px solid var(--azul-light); border-top-color:var(--azul); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .sending-txt { font-size:15px; color:var(--text2); }
+
+  .banner { display:none; margin-top:1rem; padding:11px 15px; border-radius:var(--radius-sm); font-size:13px; }
+  .banner.show { display:block; }
+  .banner-ok { background:var(--ok-bg); border:1px solid var(--ok-border); color:var(--ok-text); }
+  .banner-err { background:var(--err-bg); border:1px solid var(--err-border); color:var(--err-text); }
+
+  /* Resultado */
+  #resultado { display:none; margin-top:2rem; }
+  .res-header { background:var(--azul); color:white; border-radius:var(--radius) var(--radius) 0 0; padding:1.5rem 2rem; }
+  .res-title { font-size:20px; font-weight:600; letter-spacing:-0.3px; }
+  .res-sub { font-size:13px; opacity:0.8; margin-top:3px; }
+  .res-body { background:var(--surface); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:1.5rem 2rem; }
+  .res-section { margin-bottom:1.5rem; }
+  .res-section h3 { font-size:11px; font-weight:600; letter-spacing:0.6px; text-transform:uppercase; color:var(--text2); margin-bottom:10px; font-family:'DM Mono',monospace; }
+  .divider { height:1px; background:var(--border); margin:1.5rem 0; }
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px; }
+  .stat-card { background:var(--surface2); border-radius:var(--radius-sm); padding:0.85rem 1rem; }
+  .stat-label { font-size:11px; color:var(--text2); font-family:'DM Mono',monospace; margin-bottom:4px; }
+  .stat-val { font-size:14px; font-weight:600; color:var(--text); line-height:1.3; }
+  .tag-row { display:flex; flex-wrap:wrap; gap:6px; }
+  .tag { padding:4px 12px; border-radius:99px; font-size:12px; font-family:'DM Mono',monospace; background:var(--azul-light); color:var(--azul-dark); border:1px solid var(--azul-mid); }
+  .reflect-box { background:var(--azul-light); border:1px solid var(--azul-mid); border-radius:var(--radius-sm); padding:1rem 1.1rem; font-size:14px; line-height:1.75; color:var(--text); }
+  .reflect-box strong { color:var(--azul-dark); font-weight:600; }
+  .opinion-result { padding:1rem; border-radius:var(--radius-sm); font-size:14px; line-height:1.6; }
+  .op-si   { background:#FCEBEB; border-left:3px solid #E24B4A; color:#791F1F; }
+  .op-no   { background:#EAF3DE; border-left:3px solid #639922; color:#27500A; }
+  .op-tal  { background:#FDF0E6; border-left:3px solid #E0884A; color:#7A4010; }
+  .op-comp { background:var(--azul-light); border-left:3px solid var(--azul); color:var(--azul-dark); }
+</style>
+</head>
+<body>
+
+<div class="sending-overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="sending-txt">Guardando tu diagnóstico...</div>
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <a class="header-back" href="index.html">
+      <svg viewBox="0 0 16 16"><polyline points="10,3 5,8 10,13"/></svg>
+      Volver al inicio
+    </a>
+    <div class="header-top">
+      <div>
+        <h1>IA en Programación</h1>
+        <div class="sub">Diagnóstico de percepciones · Programación I 2026</div>
+      </div>
+      <span class="badge">Tec. Universitaria en Programación</span>
+    </div>
+    <div class="header-note">
+      No hay respuestas correctas ni incorrectas. Queremos conocer tu perspectiva real sobre la Inteligencia Artificial. Respondé con sinceridad — esto nos ayuda a acompañarte mejor.
+    </div>
+  </div>
+
+  <!-- S1: Identificación -->
+  <div class="section-header"><div class="num">1</div><h2>Identificación</h2></div>
+  <div class="card">
+    <div class="row2">
+      <div class="field">
+        <label class="lbl" for="nombre">Nombre y apellido <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Tu nombre completo">
+      </div>
+      <div class="field">
+        <label class="lbl" for="comision">Comisión</label>
+        <input type="text" id="comision" placeholder="Ej: Comisión A">
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: Conocimiento general -->
+  <div class="section-header"><div class="num">2</div><h2>¿Qué sabés sobre IA?</h2></div>
+  <div class="card">
+    <div class="field">
+      <label class="lbl">¿Cómo describirías tu conocimiento sobre Inteligencia Artificial?</label>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="conoce_ia" value="No sé qué es"><span>No sé bien qué es la Inteligencia Artificial</span></label>
+        <label class="choice"><input type="radio" name="conoce_ia" value="Concepto básico"><span>Conozco el concepto básico pero no profundizo</span></label>
+        <label class="choice"><input type="radio" name="conoce_ia" value="Conocimiento intermedio"><span>Tengo un conocimiento intermedio, leí o vi cosas sobre el tema</span></label>
+        <label class="choice"><input type="radio" name="conoce_ia" value="Conozco bastante bien"><span>Conozco bastante bien cómo funciona y sus aplicaciones</span></label>
+      </div>
+    </div>
+
+    <!-- Conceptos clave -->
+    <div class="field">
+      <label class="lbl">¿Qué creés que significa cada uno de estos términos? <span class="hint">(elegí la opción que más se acerca a tu idea)</span></label>
+      <div class="concept-grid">
+
+        <div class="concept-item">
+          <div class="concept-q">¿Qué es un "prompt"?</div>
+          <div class="concept-opts" data-name="concepto_prompt">
+            <div class="concept-opt" data-v="No sé">No lo sé</div>
+            <div class="concept-opt" data-v="Un error de código">Un error de código</div>
+            <div class="concept-opt" data-v="Un mensaje o instrucción que le das a la IA">Una instrucción que le das a la IA</div>
+            <div class="concept-opt" data-v="Un tipo de archivo">Un tipo de archivo</div>
+          </div>
+        </div>
+
+        <div class="concept-item">
+          <div class="concept-q">¿Qué es el "contexto" en una IA?</div>
+          <div class="concept-opts" data-name="concepto_contexto">
+            <div class="concept-opt" data-v="No sé">No lo sé</div>
+            <div class="concept-opt" data-v="La velocidad de respuesta">La velocidad de respuesta</div>
+            <div class="concept-opt" data-v="La información previa que la IA recuerda de la conversación">La info previa que la IA recuerda</div>
+            <div class="concept-opt" data-v="El idioma que usa la IA">El idioma que usa la IA</div>
+          </div>
+        </div>
+
+        <div class="concept-item">
+          <div class="concept-q">¿Qué es un "modelo de lenguaje" (LLM)?</div>
+          <div class="concept-opts" data-name="concepto_llm">
+            <div class="concept-opt" data-v="No sé">No lo sé</div>
+            <div class="concept-opt" data-v="Un traductor automático">Un traductor automático</div>
+            <div class="concept-opt" data-v="Una IA entrenada para generar y comprender texto">Una IA para generar y entender texto</div>
+            <div class="concept-opt" data-v="Un lenguaje de programación nuevo">Un lenguaje de programación</div>
+          </div>
+        </div>
+
+        <div class="concept-item">
+          <div class="concept-q">¿Qué significa "alucinación" en IA?</div>
+          <div class="concept-opts" data-name="concepto_alucinacion">
+            <div class="concept-opt" data-v="No sé">No lo sé</div>
+            <div class="concept-opt" data-v="Cuando la IA se queda sin energía">Cuando la IA se queda sin energía</div>
+            <div class="concept-opt" data-v="Cuando la IA inventa información falsa con confianza">Cuando la IA inventa info falsa</div>
+            <div class="concept-opt" data-v="Cuando la IA genera imágenes">Cuando la IA genera imágenes</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: Uso y herramientas -->
+  <div class="section-header"><div class="num">3</div><h2>¿Cómo y dónde la usás?</h2></div>
+  <div class="card">
+
+    <div class="field">
+      <label class="lbl">¿Desde qué dispositivos usás herramientas de IA? <span class="hint">(marcá todos los que apliquen)</span></label>
+      <div class="device-grid" id="gr-dispositivos">
+        <button class="device-btn" data-v="Celular" onclick="toggleDevice(this)">📱 Celular</button>
+        <button class="device-btn" data-v="Computadora" onclick="toggleDevice(this)">💻 Computadora</button>
+        <button class="device-btn" data-v="Tablet" onclick="toggleDevice(this)">📟 Tablet</button>
+        <button class="device-btn" data-v="No uso IA" onclick="toggleDevice(this)">🚫 No uso IA</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Con qué frecuencia usás herramientas de IA?</label>
+      <div class="scale-wrap">
+        <div class="scale-labels"><span>Nunca</span><span>Todos los días</span></div>
+        <div class="scale-opts" id="sc-frecuencia">
+          <button class="scale-btn" data-v="Nunca">Nunca</button>
+          <button class="scale-btn" data-v="Rara vez">Rara vez</button>
+          <button class="scale-btn" data-v="A veces">A veces</button>
+          <button class="scale-btn" data-v="Seguido">Seguido</button>
+          <button class="scale-btn" data-v="Todos los días">Todos los días</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Cuáles de estas herramientas de IA conocés o usaste? <span class="hint">(marcá todas las que apliquen)</span></label>
+      <div class="tools-grid" id="gr-herramientas">
+        <label class="tool-card"><input type="checkbox" value="ChatGPT"><span class="tool-icon">🤖</span><span>ChatGPT</span></label>
+        <label class="tool-card"><input type="checkbox" value="Gemini"><span class="tool-icon">✨</span><span>Gemini</span></label>
+        <label class="tool-card"><input type="checkbox" value="Claude"><span class="tool-icon">🧠</span><span>Claude</span></label>
+        <label class="tool-card"><input type="checkbox" value="Copilot (GitHub)"><span class="tool-icon">⚡</span><span>GitHub Copilot</span></label>
+        <label class="tool-card"><input type="checkbox" value="Copilot (Microsoft)"><span class="tool-icon">🪟</span><span>Copilot (MS)</span></label>
+        <label class="tool-card"><input type="checkbox" value="Midjourney / DALL-E"><span class="tool-icon">🎨</span><span>Midjourney/DALL-E</span></label>
+        <label class="tool-card"><input type="checkbox" value="Perplexity"><span class="tool-icon">🔍</span><span>Perplexity</span></label>
+        <label class="tool-card"><input type="checkbox" value="Ninguna"><span class="tool-icon">🚫</span><span>Ninguna</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Usás alguna otra herramienta que creas que es IA? <span class="hint">(escribila acá)</span></label>
+      <input type="text" id="otra_herramienta" placeholder="Ej: Siri, filtros de Instagram, traductor de Google...">
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Para qué la usás principalmente?</label>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="para_que" value="No la uso"><span>No la uso</span></label>
+        <label class="choice"><input type="radio" name="para_que" value="Estudiar / aprender"><span>Para estudiar o aprender cosas nuevas</span></label>
+        <label class="choice"><input type="radio" name="para_que" value="Trabajo o tareas cotidianas"><span>Para trabajo o tareas cotidianas</span></label>
+        <label class="choice"><input type="radio" name="para_que" value="Entretenimiento / curiosidad"><span>Por entretenimiento o curiosidad</span></label>
+        <label class="choice"><input type="radio" name="para_que" value="Múltiples usos"><span>Para varias cosas a la vez</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">Contanos brevemente cómo la usás en tu día a día <span class="hint">(opcional pero muy valioso para la cátedra)</span></label>
+      <textarea id="como_la_usa" placeholder="Ej: le pregunto dudas de matemática, la uso para resumir textos, para generar ideas, para corregir redacción..."></textarea>
+    </div>
+
+  </div>
+
+  <!-- S4: IA en la cátedra -->
+  <div class="section-header"><div class="num">4</div><h2>IA en la cátedra</h2></div>
+  <div class="card">
+
+    <div class="field">
+      <label class="lbl">¿Te gustaría que se incorpore el uso de herramientas de IA en Programación I?</label>
+      <div class="opinion-grid" id="gr-usacatedra">
+        <div class="op-card" data-v="Sí, me parece muy útil">
+          <div class="op-icon">👍</div>
+          <div class="op-label">Sí, muy útil</div>
+          <div class="op-desc">Puede ayudarme a aprender más rápido</div>
+        </div>
+        <div class="op-card" data-v="Sí, pero con límites claros">
+          <div class="op-icon">⚖️</div>
+          <div class="op-label">Sí, con límites</div>
+          <div class="op-desc">Está bien usarla pero con criterio</div>
+        </div>
+        <div class="op-card" data-v="No estoy seguro/a">
+          <div class="op-icon">🤔</div>
+          <div class="op-label">No estoy seguro/a</div>
+          <div class="op-desc">Tengo dudas sobre si es buena idea</div>
+        </div>
+        <div class="op-card" data-v="Preferiría que no">
+          <div class="op-icon">🚫</div>
+          <div class="op-label">Preferiría que no</div>
+          <div class="op-desc">Creo que puede perjudicar el aprendizaje</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿En qué actividades específicas de la materia usarías IA? <span class="hint">(marcá todas las que te interesen)</span></label>
+      <div class="uso-grid" id="gr-usos-catedra">
+        <label class="uso-item"><input type="checkbox" value="Entender errores de código"><div class="uso-text"><div class="uso-title">Entender errores de código</div><div class="uso-desc">Pegarle el error al chat y que explique qué pasó</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Generar ejemplos de código"><div class="uso-text"><div class="uso-title">Generar ejemplos de código</div><div class="uso-desc">Pedirle ejemplos para entender cómo funciona algo</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Explicar conceptos teóricos"><div class="uso-text"><div class="uso-title">Explicar conceptos teóricos</div><div class="uso-desc">Que me explique con otras palabras lo que no entendí en clase</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Revisar y mejorar mi código"><div class="uso-text"><div class="uso-title">Revisar y mejorar mi código</div><div class="uso-desc">Pedirle que mejore o corrija el código que yo escribí</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Generar ejercicios para practicar"><div class="uso-text"><div class="uso-title">Generar ejercicios para practicar</div><div class="uso-desc">Que me proponga ejercicios extra para entrenar</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Comparar soluciones propias con las de la IA"><div class="uso-text"><div class="uso-title">Comparar mi solución con la de la IA</div><div class="uso-desc">Resolver yo primero y después ver cómo lo resolvería la IA</div></div></label>
+        <label class="uso-item"><input type="checkbox" value="Ninguna de las anteriores"><div class="uso-text"><div class="uso-title">Ninguna de las anteriores</div><div class="uso-desc">No la usaría en el contexto de la materia</div></div></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="lbl">¿Hay alguna otra forma en que te gustaría usar la IA en la materia? <span class="hint">(opcional)</span></label>
+      <textarea id="como_usarla" placeholder="Contanos tu idea..."></textarea>
+    </div>
+
+  </div>
+
+  <!-- S5: IA vs programadores -->
+  <div class="section-header"><div class="num">5</div><h2>IA y el futuro de la programación</h2></div>
+  <div class="card">
+    <div class="field">
+      <label class="lbl">¿Creés que la IA va a reemplazar a los programadores?</label>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="reemplaza" value="Sí, totalmente"><span>Sí, creo que en el futuro los programadores no van a ser necesarios</span></label>
+        <label class="choice"><input type="radio" name="reemplaza" value="Parcialmente"><span>Parcialmente — va a reemplazar algunas tareas pero no a los programadores</span></label>
+        <label class="choice"><input type="radio" name="reemplaza" value="No lo creo"><span>No lo creo — los programadores seguirán siendo necesarios, la IA es una herramienta</span></label>
+        <label class="choice"><input type="radio" name="reemplaza" value="No tengo opinión formada"><span>No tengo opinión formada todavía</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label class="lbl">¿Por qué pensás eso? <span class="hint">(opcional — muy valioso para el debate en clase)</span></label>
+      <textarea id="fundamento" placeholder="Contanos tu razonamiento..."></textarea>
+    </div>
+  </div>
+
+  <!-- S6: Ética -->
+  <div class="section-header"><div class="num">6</div><h2>Aspectos éticos</h2></div>
+  <div class="card">
+    <div class="field">
+      <label class="lbl">¿Cuál de estos aspectos éticos de la IA te genera más preocupación?</label>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="etica" value="Pérdida de empleos"><span>La pérdida de empleos por automatización</span></label>
+        <label class="choice"><input type="radio" name="etica" value="Privacidad y datos personales"><span>El uso de datos personales y la privacidad</span></label>
+        <label class="choice"><input type="radio" name="etica" value="Desinformación y deepfakes"><span>La desinformación y los contenidos falsos (deepfakes)</span></label>
+        <label class="choice"><input type="radio" name="etica" value="Sesgo y discriminación"><span>El sesgo y la discriminación en los algoritmos</span></label>
+        <label class="choice"><input type="radio" name="etica" value="Dependencia tecnológica"><span>La dependencia excesiva en la tecnología</span></label>
+        <label class="choice"><input type="radio" name="etica" value="Ninguno en particular"><span>Ninguno en particular me preocupa</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label class="lbl">¿Querés agregar algo más sobre tu visión de la IA? <span class="hint">(opcional)</span></label>
+      <textarea id="reflexion" placeholder="Reflexión libre..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-submit" id="btn-enviar" onclick="enviar()">Enviar diagnóstico</button>
+  <div class="banner banner-ok" id="banner-ok">✓ Diagnóstico enviado correctamente. ¡Gracias!</div>
+  <div class="banner banner-err" id="banner-err">No se pudo conectar. Tu resultado se muestra igual abajo.</div>
+
+  <!-- RESULTADO -->
+  <div id="resultado">
+    <div class="res-header">
+      <div class="res-title">Tu perspectiva sobre la IA</div>
+      <div class="res-sub">Así respondiste — no hay respuestas correctas o incorrectas</div>
+    </div>
+    <div class="res-body">
+
+      <div class="res-section">
+        <h3>Tu perfil de uso</h3>
+        <div class="stat-grid" id="r-stats"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="res-section">
+        <h3>Herramientas que conocés</h3>
+        <div class="tag-row" id="r-herramientas"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="res-section">
+        <h3>Conceptos clave — lo que sabías</h3>
+        <div id="r-conceptos"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="res-section">
+        <h3>Tu postura sobre IA y programadores</h3>
+        <div class="opinion-result" id="r-reemplaza"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="res-section">
+        <h3>Una reflexión para llevarte</h3>
+        <div class="reflect-box" id="r-reflexion"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjj9Wo8OGGHSf9j2UH55eXoSiT79vivFnAviBD46b1U3N5c-rImYrqIX-63EhWRqjEiQ/exec";
+
+// Radios
+document.querySelectorAll('.choices input[type=radio]').forEach(inp => {
+  inp.addEventListener('change', () => {
+    document.querySelectorAll(`input[name="${inp.name}"]`).forEach(i => i.closest('.choice').classList.remove('sel'));
+    inp.closest('.choice').classList.add('sel');
+  });
+});
+// Checkboxes choices
+document.querySelectorAll('.choices input[type=checkbox], .uso-grid input[type=checkbox]').forEach(inp => {
+  inp.addEventListener('change', () => inp.closest('.uso-item, .choice').classList.toggle('sel', inp.checked));
+});
+// Tool cards
+document.querySelectorAll('.tools-grid input[type=checkbox]').forEach(inp => {
+  inp.addEventListener('change', () => inp.closest('.tool-card').classList.toggle('sel', inp.checked));
+});
+// Scale
+document.querySelectorAll('.scale-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.closest('.scale-opts').querySelectorAll('.scale-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+  });
+});
+// Opinion cards
+document.querySelectorAll('.op-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.closest('.opinion-grid').querySelectorAll('.op-card').forEach(c => c.classList.remove('sel'));
+    card.classList.add('sel');
+  });
+});
+// Concept opts
+document.querySelectorAll('.concept-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    opt.closest('.concept-opts').querySelectorAll('.concept-opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+  });
+});
+// Devices
+function toggleDevice(btn) {
+  btn.classList.toggle('sel');
+}
+
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '—';
+}
+function getScale(id) {
+  const el = document.querySelector(`#${id} .scale-btn.sel`);
+  return el ? el.dataset.v : '—';
+}
+function getOpCard(id) {
+  const el = document.querySelector(`#${id} .op-card.sel`);
+  return el ? el.dataset.v : '—';
+}
+function getConcept(name) {
+  const el = document.querySelector(`.concept-opts[data-name="${name}"] .concept-opt.sel`);
+  return el ? el.dataset.v : '—';
+}
+
+async function enviar() {
+  const nombre = document.getElementById('nombre').value.trim();
+  if (!nombre) { alert('Por favor ingresá tu nombre antes de continuar.'); return; }
+
+  const herramientas = [...document.querySelectorAll('#gr-herramientas input:checked')].map(i => i.value).join(', ') || 'Ninguna';
+  const dispositivos = [...document.querySelectorAll('#gr-dispositivos .device-btn.sel')].map(b => b.dataset.v).join(', ') || '—';
+  const usos_catedra = [...document.querySelectorAll('#gr-usos-catedra input:checked')].map(i => i.value).join(', ') || '—';
+
+  const concepto_prompt      = getConcept('concepto_prompt');
+  const concepto_contexto    = getConcept('concepto_contexto');
+  const concepto_llm         = getConcept('concepto_llm');
+  const concepto_alucinacion = getConcept('concepto_alucinacion');
+
+  const payload = {
+    tipo: 'ia',
+    nombre,
+    comision:           document.getElementById('comision').value.trim() || '—',
+    conoce_ia:          getRadio('conoce_ia'),
+    concepto_prompt,
+    concepto_contexto,
+    concepto_llm,
+    concepto_alucinacion,
+    dispositivos,
+    herramientas,
+    otra_herramienta:   document.getElementById('otra_herramienta').value.trim() || '—',
+    frecuencia:         getScale('sc-frecuencia'),
+    para_que:           getRadio('para_que'),
+    como_la_usa:        document.getElementById('como_la_usa').value.trim() || '—',
+    usa_catedra:        getOpCard('gr-usacatedra'),
+    usos_catedra,
+    como_usarla:        document.getElementById('como_usarla').value.trim() || '—',
+    reemplaza:          getRadio('reemplaza'),
+    fundamento:         document.getElementById('fundamento').value.trim() || '—',
+    etica:              getRadio('etica'),
+    reflexion:          document.getElementById('reflexion').value.trim() || '—'
+  };
+
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('btn-enviar').disabled = true;
+
+  try {
+    const params = new URLSearchParams(payload).toString();
+    await fetch(SCRIPT_URL + '?' + params, { method: 'GET', mode: 'no-cors' });
+    document.getElementById('banner-ok').classList.add('show');
+  } catch(e) {
+    document.getElementById('banner-err').classList.add('show');
+  } finally {
+    document.getElementById('overlay').classList.remove('show');
+  }
+
+  mostrarResultado(payload, herramientas, dispositivos);
+}
+
+function mostrarResultado(p, herramientas, dispositivos) {
+  // Stats
+  const stats = [
+    { label: 'Conocimiento IA',   val: p.conoce_ia },
+    { label: 'Frecuencia de uso', val: p.frecuencia },
+    { label: 'Dispositivos',      val: dispositivos },
+    { label: 'Uso principal',     val: p.para_que },
+    { label: 'IA en la cátedra',  val: p.usa_catedra },
+    { label: 'Preocupación ética',val: p.etica },
+  ];
+  document.getElementById('r-stats').innerHTML = stats.map(s =>
+    `<div class="stat-card"><div class="stat-label">${s.label}</div><div class="stat-val">${s.val}</div></div>`
+  ).join('');
+
+  // Herramientas
+  const tools = herramientas.split(', ').filter(t => t !== 'Ninguna' && t !== '—');
+  document.getElementById('r-herramientas').innerHTML = tools.length
+    ? tools.map(t => `<span class="tag">${t}</span>`).join('')
+    : '<span style="font-size:13px;color:var(--text2)">Ninguna indicada</span>';
+
+  // Conceptos — respuestas correctas
+  const conceptosCorrectos = {
+    concepto_prompt:      'Un mensaje o instrucción que le das a la IA',
+    concepto_contexto:    'La información previa que la IA recuerda de la conversación',
+    concepto_llm:         'Una IA entrenada para generar y comprender texto',
+    concepto_alucinacion: 'Cuando la IA inventa información falsa con confianza'
+  };
+  const conceptosLabels = {
+    concepto_prompt:      'Prompt',
+    concepto_contexto:    'Contexto',
+    concepto_llm:         'Modelo de lenguaje (LLM)',
+    concepto_alucinacion: 'Alucinación'
+  };
+  let conceptosHTML = '<div style="display:flex;flex-direction:column;gap:6px;">';
+  Object.keys(conceptosCorrectos).forEach(k => {
+    const respuesta = p[k];
+    const esCorrecta = respuesta === conceptosCorrectos[k];
+    const color = respuesta === '—' ? '#F0F3F7' : esCorrecta ? '#EAF3DE' : '#FDF0E6';
+    const borde = respuesta === '—' ? 'var(--border)' : esCorrecta ? '#639922' : '#E0884A';
+    const icono = respuesta === '—' ? '○' : esCorrecta ? '✓' : '~';
+    conceptosHTML += `<div style="padding:8px 12px;border-radius:6px;background:${color};border-left:3px solid ${borde};font-size:13px;">
+      <strong>${icono} ${conceptosLabels[k]}:</strong> ${respuesta === '—' ? 'No respondido' : respuesta}
+    </div>`;
+  });
+  conceptosHTML += '</div>';
+  document.getElementById('r-conceptos').innerHTML = conceptosHTML;
+
+  // Postura reemplazo
+  const posturas = {
+    'Sí, totalmente':           { cls:'op-si',   txt:'Creés que la IA <strong>reemplazará totalmente</strong> a los programadores. Es una postura válida para debatir — en la materia vamos a explorar qué puede y no puede hacer la IA hoy.' },
+    'Parcialmente':             { cls:'op-tal',  txt:'Creés que la IA <strong>reemplazará algunas tareas</strong> pero no a los programadores. Es la postura más extendida en la industria hoy. La IA amplifica las capacidades del programador.' },
+    'No lo creo':               { cls:'op-no',   txt:'No creés que la IA reemplace a los programadores. <strong>La creatividad, el criterio y el contexto</strong> siguen siendo habilidades humanas insustituibles.' },
+    'No tengo opinión formada': { cls:'op-comp', txt:'Todavía no tenés una opinión formada. <strong>Está perfecto</strong> — en la materia vamos a trabajar con IA de forma práctica para que puedas construir tu propia visión.' }
+  };
+  const postura = posturas[p.reemplaza] || { cls:'op-comp', txt:'Gracias por compartir tu perspectiva.' };
+  document.getElementById('r-reemplaza').className = 'opinion-result ' + postura.cls;
+  document.getElementById('r-reemplaza').innerHTML = postura.txt;
+
+  // Reflexión personalizada según frecuencia
+  const reflexiones = {
+    'Nunca':          'Hasta ahora no usaste IA. <strong>En esta materia vas a tener la oportunidad de explorarla de manera guiada</strong>, entendiendo cómo puede ser una aliada en tu proceso de aprendizaje.',
+    'Rara vez':       'Usás IA ocasionalmente. <strong>Hay mucho por descubrir</strong> — vamos a ver cómo usarla de forma crítica y responsable para mejorar tus soluciones.',
+    'A veces':        'Ya tenés cierta experiencia con IA. <strong>El desafío es aprender a usarla con criterio</strong>: saber cuándo confiar en ella, cuándo validarla y cuándo es mejor resolverlo vos.',
+    'Seguido':        'Usás IA con frecuencia. <strong>El siguiente paso es usarla críticamente</strong>: no solo para obtener respuestas, sino para entender el razonamiento detrás y mejorar tus propias soluciones.',
+    'Todos los días': 'La IA es parte de tu día a día. <strong>El desafío en programación es mantener tu propio pensamiento algorítmico</strong> — usarla como asistente, no como sustituto del razonamiento propio.',
+    '—':              'Gracias por completar el diagnóstico. <strong>Tu perspectiva es valiosa</strong> para que podamos acompañarte mejor durante el cursado.'
+  };
+  document.getElementById('r-reflexion').innerHTML = reflexiones[p.frecuencia] || reflexiones['—'];
+
+  document.getElementById('resultado').style.display = 'block';
+  document.getElementById('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
